@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "Kit": {
+      "title": "Kit",
+      "description": "Equipamiento o kit técnico de bodega para eventos con métricas de ciclo de vida",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$", "description": "Identificador único del kit" },
+        "sku": { "type": "string", "maxLength": 64, "description": "Código SKU de bodega" },
+        "name": { "type": "string", "maxLength": 200, "description": "Nombre comercial del kit" },
+        "category": { "type": "string", "enum": ["Iluminación", "Audio", "Video & Pantallas", "Efectos Especiales", "Estructuras & Rigging"], "description": "Categoría técnica" },
+        "location": { "type": "string", "maxLength": 100, "description": "Ubicación física en bodega" },
+        "currentCycles": { "type": "number", "description": "Ciclos o eventos acumulados desde último servicio" },
+        "cycleThreshold": { "type": "number", "description": "Umbral de ciclos antes de requerir mantenimiento preventivo" },
+        "status": { "type": "string", "enum": ["disponible", "en_evento", "mantenimiento", "bloqueado"], "description": "Estado operativo actual" },
+        "specs": { "type": "string", "maxLength": 1000, "description": "Especificaciones técnicas y descripción" },
+        "components": { "type": "array", "description": "Componentes y accesorios incluidos en el flightcase" },
+        "lastEventName": { "type": "string", "maxLength": 200, "description": "Último evento en que participó" },
+        "lastReturnDate": { "type": "string", "maxLength": 50, "description": "Fecha y hora del último retorno registrado" },
+        "lastTriageResult": { "type": "string", "enum": ["optimo", "calibracion", "critico", "nuevo"], "description": "Resultado del último triaje técnico" },
+        "serviceHistory": { "type": "array", "description": "Historial de mantenimientos técnicos realizados" },
+        "assignedEventId": { "type": "string", "maxLength": 128, "description": "ID del evento actualmente asignado si está en ruta" },
+        "assignedEventName": { "type": "string", "maxLength": 200, "description": "Nombre del evento actual asignado" },
+        "imageUrl": { "type": "string", "maxLength": 1000, "description": "URL de la foto en Firebase Storage" },
+        "manualUrl": { "type": "string", "maxLength": 1000, "description": "URL de la ficha técnica o manual PDF en Firebase Storage" },
+        "notes": { "type": "string", "maxLength": 1000, "description": "Observaciones técnicas" },
+        "updatedAt": { "type": "string", "maxLength": 50, "description": "Timestamp ISO de última actualización" }
+      },
+      "required": ["id", "sku", "name", "category", "location", "currentCycles", "cycleThreshold", "status", "specs"]
+    },
+    "DispatchEvent": {
+      "title": "DispatchEvent",
+      "description": "Programación de despacho logístico de kits a terreno",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$", "description": "ID del despacho" },
+        "code": { "type": "string", "maxLength": 64, "description": "Código o folio de orden" },
+        "eventName": { "type": "string", "maxLength": 200, "description": "Nombre de la producción o evento" },
+        "client": { "type": "string", "maxLength": 200, "description": "Cliente o productora" },
+        "venue": { "type": "string", "maxLength": 200, "description": "Lugar o recinto del evento" },
+        "departureDate": { "type": "string", "maxLength": 50, "description": "Fecha de salida de bodega" },
+        "returnDate": { "type": "string", "maxLength": 50, "description": "Fecha esperada de retorno" },
+        "status": { "type": "string", "enum": ["programado", "en_evento", "retornado"], "description": "Estado logístico del despacho" },
+        "kitIds": { "type": "array", "description": "Lista de IDs de kits asociados a este despacho" },
+        "operatorLead": { "type": "string", "maxLength": 150, "description": "Técnico o responsable asignado" },
+        "notes": { "type": "string", "maxLength": 1000, "description": "Observaciones operativas" },
+        "updatedAt": { "type": "string", "maxLength": 50, "description": "Timestamp de actualización" }
+      },
+      "required": ["id", "code", "eventName", "client", "venue", "departureDate", "returnDate", "status", "kitIds"]
+    },
+    "ReturnLog": {
+      "title": "ReturnLog",
+      "description": "Registro de check-in, inspección y triaje al retorno de un kit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$", "description": "ID único del registro de retorno" },
+        "kitId": { "type": "string", "maxLength": 128, "description": "ID del kit retornado" },
+        "kitName": { "type": "string", "maxLength": 200, "description": "Nombre del kit retornado" },
+        "eventName": { "type": "string", "maxLength": 200, "description": "Nombre del evento de donde retorna" },
+        "operatorName": { "type": "string", "maxLength": 150, "description": "Operador o técnico que recibe" },
+        "timestamp": { "type": "string", "maxLength": 50, "description": "Fecha y hora del retorno" },
+        "triageResult": { "type": "string", "enum": ["optimo", "calibracion", "critico"], "description": "Resultado de la inspección" },
+        "notes": { "type": "string", "maxLength": 1000, "description": "Detalle técnico de la inspección" },
+        "previousCycles": { "type": "number", "description": "Ciclos antes del evento" },
+        "newCycles": { "type": "number", "description": "Ciclos post-evento (+1)" },
+        "resultingStatus": { "type": "string", "enum": ["disponible", "en_evento", "mantenimiento", "bloqueado"], "description": "Estado asignado según triaje y umbral" },
+        "thresholdReached": { "type": "boolean", "description": "Indica si superó el umbral preventivo" },
+        "evidenceImageUrl": { "type": "string", "maxLength": 1000, "description": "URL de la foto de evidencia en Firebase Storage" }
+      },
+      "required": ["id", "kitId", "kitName", "eventName", "operatorName", "timestamp", "triageResult", "resultingStatus"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Perfil de usuario del sistema de bodega",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_-]+$", "description": "UID de usuario" },
+        "name": { "type": "string", "maxLength": 150, "description": "Nombre completo" },
+        "email": { "type": "string", "maxLength": 150, "description": "Correo electrónico corporativo" },
+        "role": { "type": "string", "enum": ["admin", "warehouse", "technician"], "description": "Rol en bodega" },
+        "roleTitle": { "type": "string", "maxLength": 150, "description": "Título descriptivo del cargo" },
+        "avatarInitials": { "type": "string", "maxLength": 5, "description": "Iniciales para avatar" },
+        "updatedAt": { "type": "string", "maxLength": 50, "description": "Timestamp de actualización" }
+      },
+      "required": ["id", "name", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/kits/{kitId}": {
+      "schema": "Kit",
+      "description": "Colección de kits técnicos y equipamiento de bodega"
+    },
+    "/dispatches/{dispatchId}": {
+      "schema": "DispatchEvent",
+      "description": "Colección de eventos de despacho programados y activos"
+    },
+    "/returns/{returnId}": {
+      "schema": "ReturnLog",
+      "description": "Colección de historiales y logs de retorno y triaje de kits"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Colección de perfiles de usuario"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Remix ELKM - Event Lifecycle \u0026 Kit Manager",
+  "description": "Sistema de control logístico y mantenimiento preventivo para bodegas de equipamiento de eventos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

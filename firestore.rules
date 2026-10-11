@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'sebastian581mena@gmail.com' ||
+        request.auth.token.email == 'admin.sistema@elkm-events.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Test doc for connection check (required by skill)
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Admin collection
+    match /admins/{adminId} {
+      allow get: if isSignedIn();
+      allow list, write: if isAdmin();
+    }
+
+    // Validation helpers
+    function isValidKit(data) {
+      return data.keys().hasAll(['id', 'sku', 'name', 'category', 'location', 'currentCycles', 'cycleThreshold', 'status', 'specs']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.sku is string && data.sku.size() <= 64 &&
+        data.name is string && data.name.size() <= 200 &&
+        data.category in ['Iluminación', 'Audio', 'Video & Pantallas', 'Efectos Especiales', 'Estructuras & Rigging'] &&
+        data.location is string && data.location.size() <= 100 &&
+        data.currentCycles is number && data.currentCycles >= 0 &&
+        data.cycleThreshold is number && data.cycleThreshold >= 1 &&
+        data.status in ['disponible', 'en_evento', 'mantenimiento', 'bloqueado'] &&
+        data.specs is string && data.specs.size() <= 2000;
+    }
+
+    function isValidDispatch(data) {
+      return data.keys().hasAll(['id', 'code', 'eventName', 'client', 'venue', 'departureDate', 'returnDate', 'status', 'kitIds']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.code is string && data.code.size() <= 64 &&
+        data.eventName is string && data.eventName.size() <= 200 &&
+        data.client is string && data.client.size() <= 200 &&
+        data.venue is string && data.venue.size() <= 200 &&
+        data.status in ['programado', 'en_evento', 'retornado'] &&
+        data.kitIds is list && data.kitIds.size() <= 100;
+    }
+
+    function isValidReturn(data) {
+      return data.keys().hasAll(['id', 'kitId', 'kitName', 'eventName', 'operatorName', 'timestamp', 'triageResult', 'resultingStatus']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.kitId is string && data.kitId.size() <= 128 &&
+        data.kitName is string && data.kitName.size() <= 200 &&
+        data.triageResult in ['optimo', 'calibracion', 'critico'] &&
+        data.resultingStatus in ['disponible', 'en_evento', 'mantenimiento', 'bloqueado'];
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'role']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.name is string && data.name.size() <= 150 &&
+        data.email is string && data.email.size() <= 150 &&
+        data.role in ['admin', 'warehouse', 'technician'];
+    }
+
+    // Collections
+    match /kits/{kitId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(kitId) && isValidKit(incoming());
+      allow update: if isSignedIn() && isValidId(kitId) && isValidKit(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /dispatches/{dispatchId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(dispatchId) && isValidDispatch(incoming());
+      allow update: if isSignedIn() && isValidId(dispatchId) && isValidDispatch(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /returns/{returnId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(returnId) && isValidReturn(incoming());
+      allow update, delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(userId) && isValidUser(incoming());
+      allow delete: if isAdmin();
+    }
+  }
+}
