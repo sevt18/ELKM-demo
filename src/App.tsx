@@ -25,6 +25,7 @@ import {
   saveDispatchToFirestore,
   updateDispatchInFirestore,
   saveReturnLogToFirestore,
+  getUserProfileFromFirestore,
   seedInitialDataIfEmpty,
   resetDatabaseToDefaults,
 } from './firebase/firestoreService';
@@ -51,23 +52,29 @@ export default function App() {
 
   // Listen to Firebase Auth state on mount
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         if (!currentUser) {
-          const profile: UserProfile = {
-            id: firebaseUser.uid,
-            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Administrador',
-            email: firebaseUser.email || 'admin@firebase.local',
-            role: 'admin',
-            roleTitle: 'Administrador General de Bodega',
-            avatarInitials: (firebaseUser.displayName || 'AD')
-              .split(' ')
-              .map((n) => n[0])
-              .slice(0, 2)
-              .join('')
-              .toUpperCase(),
-          };
-          setCurrentUser(profile);
+          // Attempt to fetch profile from Firestore to preserve custom name and role
+          const storedProfile = await getUserProfileFromFirestore(firebaseUser.uid);
+          if (storedProfile) {
+            setCurrentUser(storedProfile);
+          } else {
+            const profile: UserProfile = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Administrador',
+              email: firebaseUser.email || 'admin@firebase.local',
+              role: 'admin',
+              roleTitle: 'Administrador General de Bodega',
+              avatarInitials: (firebaseUser.displayName || 'AD')
+                .split(' ')
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase(),
+            };
+            setCurrentUser(profile);
+          }
         }
       } else {
         setCurrentUser(null);

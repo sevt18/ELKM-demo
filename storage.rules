@@ -1,0 +1,67 @@
+rules_version = '2';
+
+// Reglas de seguridad para Firebase Storage - Proyecto Arquitectura de Software
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Regla de denegación predeterminada
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Funciones auxiliares
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidSize() {
+      return request.resource.size < 25 * 1024 * 1024; // Máximo 25MB
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isDocumentOrImage() {
+      return request.resource.contentType.matches('image/.*') ||
+             request.resource.contentType.matches('application/pdf') ||
+             request.resource.contentType.matches('application/msword') ||
+             request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.*');
+    }
+
+    // Carpeta: kits (fotos de equipos y componentes)
+    match /kits/{fileName} {
+      allow read: if true; // Lectura pública para visualización en inventario
+      allow create, update: if isSignedIn() && isValidSize() && isImage();
+      allow delete: if isSignedIn();
+    }
+
+    // Carpeta: manuals (fichas técnicas y manuales en PDF)
+    match /manuals/{fileName} {
+      allow read: if true; // Lectura pública para descarga de manuales técnicos
+      allow create, update: if isSignedIn() && isValidSize() && isDocumentOrImage();
+      allow delete: if isSignedIn();
+    }
+
+    // Carpeta: returns (fotografías de evidencia de retorno y daños)
+    match /returns/{fileName} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidSize() && isImage();
+      allow delete: if isSignedIn();
+    }
+
+    // Carpeta: reports (comprobantes de servicio técnico y certificaciones)
+    match /reports/{fileName} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidSize() && isDocumentOrImage();
+      allow delete: if isSignedIn();
+    }
+
+    // Carpeta: general (archivos varios del sistema)
+    match /general/{fileName} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidSize();
+      allow delete: if isSignedIn();
+    }
+  }
+}

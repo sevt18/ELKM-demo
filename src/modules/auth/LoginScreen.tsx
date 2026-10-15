@@ -23,7 +23,7 @@ import {
   updateProfile 
 } from 'firebase/auth';
 import { auth, googleProvider, FIREBASE_PROJECT_NAME, FIREBASE_PROJECT_INFO } from '../../firebase/config';
-import { saveUserProfileToFirestore } from '../../firebase/firestoreService';
+import { saveUserProfileToFirestore, getUserProfileFromFirestore } from '../../firebase/firestoreService';
 
 interface LoginScreenProps {
   onLogin: (user: UserProfile) => void;
@@ -56,10 +56,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   };
 
   // Convert Firebase Auth error codes to user-friendly messages
-  const getErrorMessage = (error: unknown): string => {
+  const getErrorMessage = (error: unknown): string | null => {
     if (typeof error === 'object' && error !== null && 'code' in error) {
       const code = (error as { code: string }).code;
       switch (code) {
+        case 'auth/popup-closed-by-user':
+        case 'auth/cancelled-popup-request':
+          return null;
+        case 'auth/popup-blocked':
+          return 'La ventana emergente fue bloqueada por el navegador. Permite las ventanas emergentes o utiliza tu correo y contraseña.';
         case 'auth/email-already-in-use':
           return 'Este correo electrónico ya está registrado. Por favor, inicia sesión.';
         case 'auth/invalid-email':
@@ -141,25 +146,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
         const fbUser = userCredential.user;
 
-        const displayName = fbUser.displayName || email.split('@')[0];
-        const initials = displayName
-          .split(' ')
-          .map((n) => n[0])
-          .slice(0, 2)
-          .join('')
-          .toUpperCase() || 'AD';
+        // Try to fetch existing profile from Firestore
+        let userProfile = await getUserProfileFromFirestore(fbUser.uid);
+        if (!userProfile) {
+          const displayName = fbUser.displayName || email.split('@')[0];
+          const initials = displayName
+            .split(' ')
+            .map((n) => n[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase() || 'AD';
 
-        const userProfile: UserProfile = {
-          id: fbUser.uid,
-          name: displayName,
-          email: fbUser.email || email,
-          role: 'admin',
-          roleTitle: 'Administrador de Bodega (Email Auth)',
-          avatarInitials: initials,
-        };
-
-        // Sync to Firestore
-        await saveUserProfileToFirestore(userProfile);
+          userProfile = {
+            id: fbUser.uid,
+            name: displayName,
+            email: fbUser.email || email,
+            role: 'admin',
+            roleTitle: 'Administrador de Bodega (Email Auth)',
+            avatarInitials: initials,
+          };
+          await saveUserProfileToFirestore(userProfile);
+        }
         onLogin(userProfile);
       }
     } catch (err) {
@@ -195,7 +202,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
       await saveUserProfileToFirestore(userProfile);
       onLogin(userProfile);
     } catch (err: unknown) {
-      console.error('Error al iniciar sesión con Google:', err);
+      if (typeof err === 'object' && err !== null && 'code' in err) {
+        const code = (err as { code: string }).code;
+        if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+          // Ventana cerrada por el usuario o cancelada, no es un error de sistema
+          setAuthError(null);
+          return;
+        }
+      }
+      console.warn('Aviso de inicio de sesión con Google:', err);
       setAuthError(getErrorMessage(err));
     } finally {
       setLoadingGoogle(false);

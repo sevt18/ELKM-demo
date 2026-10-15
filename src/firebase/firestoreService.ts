@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -220,6 +221,20 @@ export async function saveUserProfileToFirestore(profile: UserProfile): Promise<
     await setDoc(doc(db, USERS_COLLECTION, profile.id), sanitized, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+export async function getUserProfileFromFirestore(uid: string): Promise<UserProfile | null> {
+  const path = `${USERS_COLLECTION}/${uid}`;
+  try {
+    const userDoc = await getDoc(doc(db, USERS_COLLECTION, uid));
+    if (userDoc.exists()) {
+      return userDoc.data() as UserProfile;
+    }
+    return null;
+  } catch (error) {
+    console.warn(`No se pudo cargar el perfil de usuario para ${path}:`, error);
+    return null;
   }
 }
 
