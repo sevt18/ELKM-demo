@@ -349,6 +349,21 @@ export default function App() {
   };
 
   const handleAddKit = (newKit: Kit) => {
+    // Defensive check to prevent empty or invalid kits from being stored in Firestore
+    if (
+      !newKit.name?.trim() ||
+      !newKit.sku?.trim() ||
+      !newKit.category ||
+      !newKit.location?.trim() ||
+      !newKit.specs?.trim() ||
+      !newKit.cycleThreshold ||
+      newKit.cycleThreshold < 5 ||
+      !newKit.components ||
+      newKit.components.length === 0
+    ) {
+      console.error('Validación rechazada: el kit debe tener todos los campos obligatorios completos.');
+      return;
+    }
     saveKitToFirestore(newKit).catch(console.error);
     setKits((prev) => [newKit, ...prev]);
   };
