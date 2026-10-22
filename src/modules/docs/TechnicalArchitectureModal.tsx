@@ -14,7 +14,13 @@ import {
   FolderTree, 
   Layers,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Network,
+  Share2,
+  ExternalLink,
+  Download,
+  Maximize2,
+  Image as ImageIcon
 } from 'lucide-react';
 import { FIREBASE_PROJECT_NAME, FIREBASE_PROJECT_INFO } from '../../firebase/config';
 
@@ -23,10 +29,12 @@ interface TechnicalArchitectureModalProps {
 }
 
 export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProps> = ({ onClose }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'adr2' | 'adr1'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'diagram' | 'adr2' | 'adr1'>('overview');
+  const [diagramView, setDiagramView] = useState<'c4' | 'lifecycle'>('c4');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -60,14 +68,14 @@ export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProp
                 FIREBASE STORAGE
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/40 font-semibold">
-                ADR DOCUMENTATION
+                DIAGRAMAS & ADRs
               </span>
             </div>
             <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight mt-0.5">
               {FIREBASE_PROJECT_NAME}
             </h2>
             <p className="text-slate-400 text-xs mt-0.5">
-              Sistema ELKM · Monolito Modular con Cloud Firestore, Firebase Storage y Registros de Decisiones Arquitectónicas (ADRs).
+              Sistema ELKM · Monolito Modular con Cloud Firestore, Firebase Storage y Diagramas de Arquitectura C4/Mermaid.
             </p>
           </div>
         </div>
@@ -87,6 +95,19 @@ export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProp
           </button>
 
           <button
+            onClick={() => setActiveTab('diagram')}
+            className={`px-3 py-1.5 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
+              activeTab === 'diagram'
+                ? 'bg-cyan-600 text-white font-bold'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+            }`}
+          >
+            <Network className="w-3.5 h-3.5 text-cyan-300" />
+            <span>Diagrama de Arquitectura</span>
+            <span className="px-1.5 py-0.2 rounded text-[9px] bg-cyan-400 text-slate-950 font-bold ml-1">Ver</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('adr2')}
             className={`px-3 py-1.5 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
               activeTab === 'adr2'
@@ -96,7 +117,6 @@ export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProp
           >
             <FolderTree className="w-3.5 h-3.5 text-amber-300" />
             <span>ADR 002: Estructura Interna</span>
-            <span className="px-1.5 py-0.2 rounded text-[9px] bg-amber-400 text-slate-950 font-bold ml-1">Nuevo</span>
           </button>
 
           <button
@@ -108,7 +128,7 @@ export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProp
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>ADR 001: Arquitectura Seleccionada</span>
+            <span>ADR 001: Arquitectura</span>
           </button>
         </div>
 
@@ -281,6 +301,401 @@ export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProp
                 </li>
               </ul>
             </div>
+          </div>
+        )}
+
+        {/* TAB 1.5: DIAGRAMA DE ARQUITECTURA (INTERNO) */}
+        {activeTab === 'diagram' && (
+          <div className="space-y-5 animate-in fade-in duration-150">
+            {/* Header Card */}
+            <div className="bg-slate-950 p-4 rounded-xl border border-cyan-500/40">
+              <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-800">
+                <div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold uppercase">
+                    Visualizador de Arquitectura Nativo
+                  </span>
+                  <h3 className="text-base font-bold text-white mt-1">
+                    Diagrama del Sistema & Ciclo Operativo ELKM
+                  </h3>
+                </div>
+                <div className="flex items-center gap-1.5 bg-slate-900 p-1 rounded-lg border border-slate-800">
+                  <button
+                    onClick={() => setDiagramView('c4')}
+                    className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
+                      diagramView === 'c4'
+                        ? 'bg-cyan-600 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    1. Arquitectura por Capas (C4)
+                  </button>
+                  <button
+                    onClick={() => setDiagramView('lifecycle')}
+                    className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors cursor-pointer ${
+                      diagramView === 'lifecycle'
+                        ? 'bg-cyan-600 text-white shadow-xs'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    2. Ciclo de Vida del Kit
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-slate-400 text-xs mt-2">
+                {diagramView === 'c4'
+                  ? 'Representación visual de la arquitectura técnica: Monolito Modular en React 19, capa de contratos, servicios desacoplados y persistencia en Google Cloud Firebase.'
+                  : 'Diagrama de máquina de estados y reglas operativas del inventario: desde el alta con validación estricta, salidas a eventos, triaje dinámico (+1 ciclo) y mantenimiento preventivo.'}
+              </p>
+            </div>
+
+            {/* VISTA 1: ARQUITECTURA C4 Y CAPAS DEL SISTEMA */}
+            {diagramView === 'c4' && (
+              <div className="space-y-4">
+                {/* Visual Architecture Diagram Image */}
+                <div className="bg-slate-950 p-4 rounded-xl border border-cyan-500/50 space-y-3">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+                      <ImageIcon className="w-4 h-4 text-cyan-400" />
+                      Diagrama de Arquitectura de Software ELKM (Imagen Oficial)
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setIsImageExpanded(true)}
+                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                        title="Ver en pantalla completa"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                        <span>Ampliar</span>
+                      </button>
+                      <a
+                        href="/architecture_diagram.jpg"
+                        download="ELKM_Diagrama_Arquitectura.jpg"
+                        className="px-2.5 py-1 bg-cyan-600 hover:bg-cyan-500 text-slate-950 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                        title="Descargar diagrama en alta resolución"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Descargar JPG</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  <div 
+                    onClick={() => setIsImageExpanded(true)}
+                    className="relative rounded-lg overflow-hidden border border-slate-800 bg-slate-900 group cursor-pointer shadow-lg"
+                  >
+                    <img
+                      src="/architecture_diagram.jpg"
+                      alt="Diagrama de Arquitectura de Software ELKM"
+                      className="w-full h-auto object-contain rounded-lg transition-transform duration-200 group-hover:scale-[1.01]"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-2xs">
+                      <Maximize2 className="w-5 h-5 text-cyan-400" />
+                      <span>Haz clic para ampliar en pantalla completa</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-400 text-center">
+                    Esquema técnico oficial: Modelo de 3 Tiers (Actores, Frontend Monolito Modular en React 19, Google Cloud Firebase BaaS).
+                  </p>
+                </div>
+                {/* Layer 1: Actors */}
+                <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                      <span>👥</span> Capa 1: Usuarios y Roles Operativos (Navegador Web / HTTPS)
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                      Control de Acceso ABAC / RBAC
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                    <div className="p-2.5 bg-slate-900/90 rounded-lg border border-slate-800">
+                      <strong className="text-white block font-semibold mb-0.5">👤 Administrador General</strong>
+                      <span className="text-slate-400">Control total del catálogo, bajas de activo, parámetros y auditoría técnica.</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-900/90 rounded-lg border border-slate-800">
+                      <strong className="text-white block font-semibold mb-0.5">📦 Operario de Bodega</strong>
+                      <span className="text-slate-400">Despachos logísticos a eventos y triaje en rampa (+1 ciclo acumulativo).</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-900/90 rounded-lg border border-slate-800">
+                      <strong className="text-white block font-semibold mb-0.5">🔧 Técnico de Taller</strong>
+                      <span className="text-slate-400">Mantenimiento preventivo, calibración, actas técnicas y reinicio de ciclos.</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visual Arrow */}
+                <div className="flex items-center justify-center gap-2 text-slate-500 text-[11px] font-mono">
+                  <span>↓</span>
+                  <span className="bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-slate-400">
+                    Tráfico Seguro HTTPS · Interfaz React 19 SPA
+                  </span>
+                  <span>↓</span>
+                </div>
+
+                {/* Layer 2: Frontend Monolito Modular */}
+                <div className="p-3.5 bg-slate-950 rounded-xl border border-cyan-500/40 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+                      <FolderTree className="w-4 h-4 text-cyan-400" />
+                      Capa 2: Frontend Monolito Modular (src/modules/*)
+                    </span>
+                    <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800">
+                      Vite + TypeScript + Tailwind CSS
+                    </span>
+                  </div>
+
+                  {/* Bounded Contexts Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                      <strong className="text-emerald-400 block mb-0.5">modules/auth</strong>
+                      <span className="text-slate-400 text-[10px]">Autenticación dual (Email/Pass + Google) y perfiles en Firestore.</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                      <strong className="text-emerald-400 block mb-0.5">modules/inventory</strong>
+                      <span className="text-slate-400 text-[10px]">Catálogo de kits, validación estricta de campos y fotos en Storage.</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                      <strong className="text-emerald-400 block mb-0.5">modules/dispatch</strong>
+                      <span className="text-slate-400 text-[10px]">Programación de eventos de campo y calendario logístico.</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                      <strong className="text-emerald-400 block mb-0.5">modules/returns</strong>
+                      <span className="text-slate-400 text-[10px]">Rampa de recepción, triaje dinámico (+1 ciclo) y fotos de evidencia.</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                      <strong className="text-emerald-400 block mb-0.5">modules/maintenance</strong>
+                      <span className="text-slate-400 text-[10px]">Taller de servicio técnico, certificados PDF y reinicio de ciclos a cero.</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                      <strong className="text-emerald-400 block mb-0.5">modules/alerts</strong>
+                      <span className="text-slate-400 text-[10px]">Monitoreo de umbrales preventivos (&ge;100%) y riesgo operativo.</span>
+                    </div>
+                  </div>
+
+                  {/* Shared Sub-layer */}
+                  <div className="pt-2 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-300">
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-amber-400 font-bold">Contratos Canónicos:</span>
+                      <code className="text-slate-400 font-mono">src/types/elkm.ts</code> (Kit, DispatchEvent, ReturnLog, UserProfile)
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="text-sky-400 font-bold">Componente Compartido:</span>
+                      <code className="text-slate-400 font-mono">FirebaseFileUpload.tsx</code>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Visual Arrow */}
+                <div className="flex items-center justify-center gap-2 text-slate-500 text-[11px] font-mono">
+                  <span>↓</span>
+                  <span className="bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-slate-400">
+                    Llamadas Asíncronas Tipadas · Inyección de Dependencias
+                  </span>
+                  <span>↓</span>
+                </div>
+
+                {/* Layer 3: BaaS Services */}
+                <div className="p-3.5 bg-slate-950 rounded-xl border border-indigo-500/40 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+                      <Layers className="w-4 h-4 text-indigo-400" />
+                      Capa 3: Servicios BaaS Desacoplados (src/firebase/)
+                    </span>
+                    <span className="text-[10px] font-mono text-indigo-300 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800">
+                      Firebase Web SDK v11
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                      <strong className="text-white block font-semibold mb-0.5">📡 firestoreService.ts</strong>
+                      <span className="text-slate-400">CRUD tipado, listeners reactivos en tiempo real (<code>onSnapshot</code>) y transacciones.</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                      <strong className="text-white block font-semibold mb-0.5">💾 storageService.ts</strong>
+                      <span className="text-slate-400">Subida asíncrona de archivos, seguimiento de progreso (0-100%), sanitización y límite de 25MB.</span>
+                    </div>
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                      <strong className="text-white block font-semibold mb-0.5">🛡️ errors.ts</strong>
+                      <span className="text-slate-400">Manejo centralizado de excepciones de Firebase y mensajes amigables al operador.</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visual Arrow */}
+                <div className="flex items-center justify-center gap-2 text-slate-500 text-[11px] font-mono">
+                  <span>↕</span>
+                  <span className="bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-slate-400">
+                    Conexión WebSocket Sincronizada · TLS 1.3 / Encriptación en Reposo
+                  </span>
+                  <span>↕</span>
+                </div>
+
+                {/* Layer 4: Google Cloud Firebase */}
+                <div className="p-3.5 bg-slate-950 rounded-xl border border-emerald-500/40 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                      <Database className="w-4 h-4 text-emerald-400" />
+                      Capa 4: Backend-as-a-Service en Google Cloud Firebase
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
+                      Project ID: true-framing-gn2tx
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 space-y-1">
+                      <strong className="text-amber-300 block font-semibold">Cloud Firestore</strong>
+                      <span className="text-slate-400 block font-mono text-[10px] truncate">
+                        ID: {FIREBASE_PROJECT_INFO.firestoreDatabaseId}
+                      </span>
+                      <p className="text-slate-400 text-[10px]">
+                        Colecciones activas: <code>/kits</code>, <code>/dispatches</code>, <code>/returns</code>, <code>/users</code>. Reglas de seguridad ABAC en <code>firestore.rules</code>.
+                      </p>
+                    </div>
+
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 space-y-1">
+                      <strong className="text-sky-300 block font-semibold">Firebase Storage</strong>
+                      <span className="text-slate-400 block font-mono text-[10px] truncate">
+                        Bucket: {FIREBASE_PROJECT_INFO.storageBucket}
+                      </span>
+                      <p className="text-slate-400 text-[10px]">
+                        Directorios en la nube: <code>kits/</code> (portadas), <code>manuals/</code> (PDFs), <code>returns/</code> (evidencias), <code>reports/</code> (certificados).
+                      </p>
+                    </div>
+
+                    <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 space-y-1">
+                      <strong className="text-purple-300 block font-semibold">Firebase Authentication</strong>
+                      <span className="text-slate-400 block font-mono text-[10px]">
+                        Método Dual: Email & Pass + Google
+                      </span>
+                      <p className="text-slate-400 text-[10px]">
+                        Emisión de tokens JWT de sesión segura y sincronización de perfil con roles de bodega en Firestore.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* VISTA 2: CICLO DE VIDA Y REGLAS DE NEGOCIO DEL KIT */}
+            {diagramView === 'lifecycle' && (
+              <div className="space-y-3">
+                <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
+                    Flujo Operativo y Máquina de Estados del Kit en Bodega
+                  </span>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Trazabilidad automatizada de los kits a través de 6 fases operativas, controlando la acumulación de fatiga física mediante ciclos de evento y triaje dinámico.
+                  </p>
+                </div>
+
+                {/* Workflow Steps in Cards */}
+                <div className="space-y-2.5 text-[11px]">
+                  
+                  {/* Step 1 */}
+                  <div className="p-3 bg-slate-950 rounded-xl border border-emerald-500/30 flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                      1
+                    </span>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-white text-xs">Alta Inicial & Validación Estricta</strong>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+                          Estado: DISPONIBLE
+                        </span>
+                      </div>
+                      <p className="text-slate-400">
+                        Se ingresa el kit completando obligatoriamente todos los campos (nombre, categoría, SKU único, ubicación en bodega, umbral de ciclos, especificaciones técnicas, foto en Storage y componentes). Inicia con <strong>0 ciclos operativos</strong>.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="p-3 bg-slate-950 rounded-xl border border-sky-500/30 flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                      2
+                    </span>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-white text-xs">Orden de Despacho Logístico a Evento</strong>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-950 text-sky-300 border border-sky-800">
+                          Estado: EN_EVENTO
+                        </span>
+                      </div>
+                      <p className="text-slate-400">
+                        El operario crea una orden de despacho asignando el kit a un evento, cliente y recinto. El kit cambia de estado para evitar dobles reservas.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="p-3 bg-slate-950 rounded-xl border border-amber-500/30 flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                      3
+                    </span>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-white text-xs">Retorno en Rampa & Triaje Dinámico (+1 Ciclo)</strong>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">
+                          Regla: +1 Ciclo Obligatorio
+                        </span>
+                      </div>
+                      <p className="text-slate-400">
+                        Al llegar de vuelta a bodega, el operario inspecciona el kit y sube foto de evidencia a Storage. El motor suma automáticamente <strong>+1 ciclo de fatiga operativa</strong> y aplica la regla de triaje:
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-[10px]">
+                        <div className="p-2 bg-slate-900 rounded border border-emerald-900/60 text-emerald-300">
+                          <strong>• Óptimo:</strong> Sin daños visibles. Continúa a evaluación de umbral de ciclos.
+                        </div>
+                        <div className="p-2 bg-slate-900 rounded border border-amber-900/60 text-amber-300">
+                          <strong>• Calibración:</strong> Desajuste leve. Se envía directamente a <code>mantenimiento</code>.
+                        </div>
+                        <div className="p-2 bg-slate-900 rounded border border-rose-900/60 text-rose-300">
+                          <strong>• Crítico:</strong> Daño grave o componente faltante. Pasa a <code>bloqueado</code>.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 4 */}
+                  <div className="p-3 bg-slate-950 rounded-xl border border-rose-500/30 flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                      4
+                    </span>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-white text-xs">Evaluación Automatizada de Umbral de Ciclos</strong>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                          Semáforo de Tolerancia
+                        </span>
+                      </div>
+                      <p className="text-slate-400">
+                        Si los ciclos acumulados alcanzan o superan el umbral límite (&ge;100% de tolerancia), el sistema dispara de forma autónoma una <strong>Alerta Preventiva Crítica</strong> y cambia el estado del kit a <code>mantenimiento</code>, impidiendo nuevos despachos.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 5 */}
+                  <div className="p-3 bg-slate-950 rounded-xl border border-indigo-500/30 flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                      5
+                    </span>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <strong className="text-white text-xs">Servicio Técnico en Taller & Reinicio de Ciclos</strong>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-950 text-indigo-300 border border-indigo-800">
+                          Estado: MANTENIMIENTO &rarr; DISPONIBLE
+                        </span>
+                      </div>
+                      <p className="text-slate-400">
+                        El técnico realiza el mantenimiento (preventivo, correctivo o calibración), adjunta el acta técnica en PDF a Storage, y el sistema <strong>reinicia el contador de ciclos a 0</strong>, retornando el kit al inventario activo en estado <code>disponible</code>.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -460,6 +875,37 @@ export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProp
         </div>
 
       </div>
+
+      {/* Full-Screen Lightbox Modal for Diagram Image */}
+      {isImageExpanded && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative max-w-6xl w-full max-h-[96vh] flex flex-col items-center">
+            <button
+              onClick={() => setIsImageExpanded(false)}
+              className="absolute -top-10 right-0 p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-semibold"
+            >
+              <X className="w-5 h-5" />
+              <span>Cerrar Vista Completa</span>
+            </button>
+            <img
+              src="/architecture_diagram.jpg"
+              alt="Diagrama de Arquitectura de Software ELKM"
+              className="max-h-[85vh] w-auto max-w-full rounded-xl border border-slate-700 shadow-2xl object-contain bg-slate-950"
+            />
+            <div className="mt-3 flex items-center gap-4 text-xs text-slate-300">
+              <span className="font-semibold text-white">Diagrama Oficial de Arquitectura · ELKM</span>
+              <a
+                href="/architecture_diagram.jpg"
+                download="ELKM_Diagrama_Arquitectura.jpg"
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded-lg flex items-center gap-1.5 cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Descargar Imagen JPG</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
