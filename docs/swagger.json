@@ -1,0 +1,395 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ELKM API - Event Lifecycle & Kit Manager",
+    "description": "Especificación formal de la API REST para la gestión de inventario, despachos logísticos, triaje en rampa y mantenimiento preventivo de kits técnicos para eventos.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Sebastián Jiménez Mena & Samuel David Quintana",
+      "email": "sebastian581mena@gmail.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://ais-dev-sno7fjifm6226srfhwoz4p-846181025842.us-east1.run.app/api",
+      "description": "Servidor de Desarrollo Cloud Run"
+    },
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Servidor Local de Desarrollo"
+    }
+  ],
+  "tags": [
+    { "name": "Kits", "description": "Gestión del catálogo de inventario técnico y ciclos de vida" },
+    { "name": "Dispatches", "description": "Órdenes de despacho logístico de equipamiento a eventos" },
+    { "name": "Returns", "description": "Rampa de retornos, triaje físico y acumulación de ciclos (+1)" },
+    { "name": "Maintenance", "description": "Órdenes de servicio técnico, certificados y reinicio de ciclos" },
+    { "name": "Auth", "description": "Autenticación de personal y perfiles de usuario" }
+  ],
+  "paths": {
+    "/kits": {
+      "get": {
+        "tags": ["Kits"],
+        "summary": "Listar todos los kits de inventario",
+        "description": "Retorna la colección completa de kits con su estado operativo, categoría y ciclos actuales.",
+        "responses": {
+          "200": {
+            "description": "Lista de kits obtenida exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Kit" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Kits"],
+        "summary": "Registrar un nuevo kit técnico",
+        "description": "Crea un kit con validación estricta de todos los campos obligatorios.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/NewKitRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Kit registrado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Kit" }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos incompletos o inválidos en la solicitud",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kits/{id}": {
+      "get": {
+        "tags": ["Kits"],
+        "summary": "Consultar detalle de un kit",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del kit",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Kit" } }
+            }
+          },
+          "404": { "description": "Kit no encontrado" }
+        }
+      },
+      "put": {
+        "tags": ["Kits"],
+        "summary": "Actualizar kit técnico",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UpdateKitRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Kit actualizado exitosamente" },
+          "404": { "description": "Kit no encontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Kits"],
+        "summary": "Dar de baja un kit (Admin)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "204": { "description": "Kit dado de baja exitosamente" },
+          "403": { "description": "No autorizado (requiere rol admin)" }
+        }
+      }
+    },
+    "/dispatches": {
+      "get": {
+        "tags": ["Dispatches"],
+        "summary": "Listar órdenes de despacho",
+        "responses": {
+          "200": {
+            "description": "Lista de despachos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/DispatchEvent" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Dispatches"],
+        "summary": "Crear orden de despacho a evento",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/NewDispatchRequest" } }
+          }
+        },
+        "responses": {
+          "201": { "description": "Despacho creado y kits marcados en evento" }
+        }
+      }
+    },
+    "/returns": {
+      "get": {
+        "tags": ["Returns"],
+        "summary": "Listar bitácora de retornos",
+        "responses": {
+          "200": {
+            "description": "Historial de retornos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ReturnLog" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Returns"],
+        "summary": "Registrar retorno con triaje y suma de ciclo (+1)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/NewReturnRequest" } }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Retorno registrado, ciclo acumulado y triaje aplicado",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ReturnLog" } }
+            }
+          }
+        }
+      }
+    },
+    "/kits/{id}/maintenance": {
+      "post": {
+        "tags": ["Maintenance"],
+        "summary": "Registrar mantenimiento y reiniciar ciclos a cero",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/MaintenanceRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Mantenimiento asentado y kit habilitado" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Iniciar sesión de usuario",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Sesión iniciada con JWT y rol asignado" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Obtener perfil de usuario y rol",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Perfil de usuario",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UserProfile" } }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Kit": {
+        "type": "object",
+        "required": ["id", "sku", "name", "category", "location", "currentCycles", "cycleThreshold", "status", "specs"],
+        "properties": {
+          "id": { "type": "string", "example": "KIT-0101" },
+          "sku": { "type": "string", "example": "ELKM-AUD-450" },
+          "name": { "type": "string", "example": "Kit Sonorización Portátil 1000W" },
+          "category": { "type": "string", "enum": ["Iluminación", "Audio", "Video & Pantallas", "Efectos Especiales", "Estructuras & Rigging"] },
+          "location": { "type": "string", "example": "Bahía Audio A-05" },
+          "currentCycles": { "type": "integer", "example": 14 },
+          "cycleThreshold": { "type": "integer", "example": 50 },
+          "status": { "type": "string", "enum": ["disponible", "en_evento", "mantenimiento", "bloqueado"] },
+          "specs": { "type": "string", "example": "Sistema autoamplificado 1000W RMS con procesador DSP..." },
+          "imageUrl": { "type": "string", "format": "uri" },
+          "manualUrl": { "type": "string", "format": "uri" }
+        }
+      },
+      "NewKitRequest": {
+        "type": "object",
+        "required": ["sku", "name", "category", "location", "cycleThreshold", "specs", "components"],
+        "properties": {
+          "sku": { "type": "string", "minLength": 3 },
+          "name": { "type": "string", "minLength": 4 },
+          "category": { "type": "string", "enum": ["Iluminación", "Audio", "Video & Pantallas", "Efectos Especiales", "Estructuras & Rigging"] },
+          "location": { "type": "string", "minLength": 3 },
+          "cycleThreshold": { "type": "integer", "minimum": 5, "maximum": 500 },
+          "specs": { "type": "string", "minLength": 10 },
+          "imageUrl": { "type": "string" },
+          "manualUrl": { "type": "string" },
+          "components": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "quantity": { "type": "integer", "minimum": 1 },
+                "serialOrSpec": { "type": "string" }
+              }
+            }
+          }
+        }
+      },
+      "UpdateKitRequest": {
+        "type": "object",
+        "properties": {
+          "location": { "type": "string" },
+          "status": { "type": "string" },
+          "specs": { "type": "string" }
+        }
+      },
+      "DispatchEvent": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "code": { "type": "string" },
+          "eventName": { "type": "string" },
+          "client": { "type": "string" },
+          "venue": { "type": "string" },
+          "departureDate": { "type": "string" },
+          "returnDate": { "type": "string" },
+          "status": { "type": "string", "enum": ["programado", "en_evento", "retornado"] },
+          "kitIds": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "NewDispatchRequest": {
+        "type": "object",
+        "required": ["eventName", "client", "venue", "departureDate", "returnDate", "kitIds"],
+        "properties": {
+          "eventName": { "type": "string" },
+          "client": { "type": "string" },
+          "venue": { "type": "string" },
+          "departureDate": { "type": "string" },
+          "returnDate": { "type": "string" },
+          "kitIds": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ReturnLog": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "kitId": { "type": "string" },
+          "kitName": { "type": "string" },
+          "eventName": { "type": "string" },
+          "operatorName": { "type": "string" },
+          "timestamp": { "type": "string" },
+          "triageResult": { "type": "string", "enum": ["optimo", "calibracion", "critico"] },
+          "previousCycles": { "type": "integer" },
+          "newCycles": { "type": "integer" },
+          "resultingStatus": { "type": "string" },
+          "thresholdReached": { "type": "boolean" },
+          "evidenceImageUrl": { "type": "string" }
+        }
+      },
+      "NewReturnRequest": {
+        "type": "object",
+        "required": ["kitId", "eventName", "triageResult", "operatorName"],
+        "properties": {
+          "kitId": { "type": "string" },
+          "eventName": { "type": "string" },
+          "operatorName": { "type": "string" },
+          "triageResult": { "type": "string", "enum": ["optimo", "calibracion", "critico"] },
+          "notes": { "type": "string" },
+          "evidenceImageUrl": { "type": "string" }
+        }
+      },
+      "MaintenanceRequest": {
+        "type": "object",
+        "required": ["technician", "type", "notes", "cyclesResetToZero"],
+        "properties": {
+          "technician": { "type": "string" },
+          "type": { "type": "string", "enum": ["Preventivo", "Correctivo", "Calibración", "Overhaul"] },
+          "notes": { "type": "string" },
+          "cyclesResetToZero": { "type": "boolean", "default": true },
+          "reportAttachmentUrl": { "type": "string" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 6 }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string" },
+          "role": { "type": "string", "enum": ["admin", "warehouse", "technician"] },
+          "roleTitle": { "type": "string" },
+          "avatarInitials": { "type": "string" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "message": { "type": "string" },
+          "statusCode": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

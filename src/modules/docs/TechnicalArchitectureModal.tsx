@@ -29,7 +29,7 @@ interface TechnicalArchitectureModalProps {
 }
 
 export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProps> = ({ onClose }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'diagram' | 'adr2' | 'adr1'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'diagram' | 'adr3' | 'adr2' | 'adr1'>('overview');
   const [diagramView, setDiagramView] = useState<'c4' | 'lifecycle'>('c4');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
@@ -105,6 +105,19 @@ export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProp
             <Network className="w-3.5 h-3.5 text-cyan-300" />
             <span>Diagrama de Arquitectura</span>
             <span className="px-1.5 py-0.2 rounded text-[9px] bg-cyan-400 text-slate-950 font-bold ml-1">Ver</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('adr3')}
+            className={`px-3 py-1.5 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 ${
+              activeTab === 'adr3'
+                ? 'bg-rose-600 text-white font-bold'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+            }`}
+          >
+            <Share2 className="w-3.5 h-3.5 text-rose-300" />
+            <span>ADR 003: Comunicación & Swagger</span>
+            <span className="px-1.5 py-0.2 rounded text-[9px] bg-rose-400 text-slate-950 font-bold ml-1">Nuevo</span>
           </button>
 
           <button
@@ -696,6 +709,312 @@ export const TechnicalArchitectureModal: React.FC<TechnicalArchitectureModalProp
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* TAB: ADR 003 - ESTRATEGIA DE COMUNICACIÓN & SWAGGER */}
+        {activeTab === 'adr3' && (
+          <div className="space-y-5 animate-in fade-in duration-150">
+            {/* Header Card */}
+            <div className="bg-slate-950 p-4 rounded-xl border border-rose-500/40">
+              <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-800">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold uppercase">
+                      Architectural Decision Record
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold uppercase">
+                      OpenAPI 3.0 / Swagger
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-white mt-1">
+                    ADR 003: Estrategia de Comunicación
+                  </h3>
+                </div>
+                <div className="text-right text-[11px] text-slate-400">
+                  <span className="text-emerald-400 font-bold">Estado: Aceptado</span> · 28 de Octubre de 2026
+                </div>
+              </div>
+              <p className="text-slate-400 text-xs mt-2">
+                <strong>Autores:</strong> Sebastián Jiménez Mena (202320048) & Samuel David Quintana (202310319) · <strong>Proyecto:</strong> ELKM - Event Lifecycle & Kit Manager
+              </p>
+            </div>
+
+            {/* Las 3 Decisiones Fundamentales */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="bg-slate-950 p-3.5 rounded-xl border border-rose-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-rose-400 font-bold text-xs flex items-center gap-1.5">
+                    <Share2 className="w-4 h-4 text-rose-400" />
+                    1. Paradigma de Comunicación
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] bg-rose-950 text-rose-300 border border-rose-800 font-bold">
+                    Híbrido
+                  </span>
+                </div>
+                <h4 className="text-white font-semibold text-xs">Síncrono (REST) + Asíncrono (Eventos)</h4>
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  <strong>Síncrono (HTTPS):</strong> Transacciones atómicas de alta, despacho, triaje y mantenimiento con respuesta inmediata.
+                  <br />
+                  <strong>Asíncrono (Observer):</strong> Listeners reactivos en tiempo real (<code className="text-rose-300">onSnapshot</code>) y carga de fotos/actas técnicas en background.
+                </p>
+              </div>
+
+              <div className="bg-slate-950 p-3.5 rounded-xl border border-cyan-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-cyan-400 font-bold text-xs flex items-center gap-1.5">
+                    <Network className="w-4 h-4 text-cyan-400" />
+                    2. Tecnología Seleccionada
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-800 font-bold">
+                    REST / JSON
+                  </span>
+                </div>
+                <h4 className="text-white font-semibold text-xs">REST sobre HTTP/1.1 & HTTP/2</h4>
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  Adoptado por su <strong>extrema simplicidad, ubicuidad en navegadores y baja complejidad cognitiva</strong> para el equipo de 2 personas. Cero tooling intermedio, payloads JSON nativos y depuración transparente en DevTools.
+                </p>
+              </div>
+
+              <div className="bg-slate-950 p-3.5 rounded-xl border border-emerald-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-emerald-400 font-bold text-xs flex items-center gap-1.5">
+                    <FileText className="w-4 h-4 text-emerald-400" />
+                    3. Contrato de Servicios
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold">
+                    Swagger + TS
+                  </span>
+                </div>
+                <h4 className="text-white font-semibold text-xs">OpenAPI 3.0 + Tipado Canónico</h4>
+                <p className="text-slate-400 text-[11px] leading-relaxed">
+                  <strong>El contrato más básico y plausible:</strong> Sin necesidad de compiladores binarios (<code className="text-emerald-300">protoc</code>). Sincronizado 1:1 con las interfaces TypeScript de <code className="text-emerald-300">src/types/elkm.ts</code>.
+                </p>
+              </div>
+            </div>
+
+            {/* Alternativas Descartadas */}
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+              <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                Alternativas Descartadas y Justificación Técnica (Sesión 11 IUSH)
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                <div className="p-3 bg-slate-900 rounded-lg border border-red-500/30 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <strong className="text-red-400 font-semibold">SOAP (WSDL / XML)</strong>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] bg-red-950 text-red-300 font-bold">Descartado</span>
+                  </div>
+                  <p className="text-slate-400 text-[10.5px]">
+                    <strong>Sobrecarga Masiva & Penalización FinOps:</strong> Payloads XML con sobres SOAP entre un 300% y 500% más pesados que JSON. Alto costo de procesamiento CPU y obsolescencia en aplicaciones web modernas.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-900 rounded-lg border border-red-500/30 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <strong className="text-red-400 font-semibold">gRPC (.proto / Protobuf)</strong>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] bg-red-950 text-red-300 font-bold">Descartado</span>
+                  </div>
+                  <p className="text-slate-400 text-[10.5px]">
+                    <strong>Incompatibilidad Nativa con Navegadores:</strong> Requiere desplegar proxies intermedios (Envoy o gRPC-Web), agregando infraestructura innecesaria, costos mensuales fijos y complejidad con compiladores binarios.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-900 rounded-lg border border-red-500/30 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <strong className="text-red-400 font-semibold">GraphQL (Schema Definition - SDL)</strong>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] bg-red-950 text-red-300 font-bold">Descartado</span>
+                  </div>
+                  <p className="text-slate-400 text-[10.5px]">
+                    <strong>Sobrecarga de Servidor Intermedio (Caso Prime Video):</strong> Requiere costear un servidor gateway dedicado (Apollo), agregando saltos de red, latencia y perdiendo el caché HTTP nativo del navegador.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-900 rounded-lg border border-red-500/30 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <strong className="text-red-400 font-semibold">Webhooks como Canal Primario</strong>
+                    <span className="px-1.5 py-0.2 rounded text-[9px] bg-red-950 text-red-300 font-bold">Descartado</span>
+                  </div>
+                  <p className="text-slate-400 text-[10.5px]">
+                    <strong>Inviabilidad en Clientes Web:</strong> Los navegadores en rampas de bodega están tras redes corporativas o NAT y no poseen IPs públicas estáticas para recibir peticiones push entrantes.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Buenas Prácticas FinOps & Green Software */}
+            <div className="bg-slate-950 p-4 rounded-xl border border-emerald-500/30 space-y-2">
+              <h4 className="text-xs font-bold text-emerald-400 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                Buenas Prácticas Adoptadas (Green Software, FinOps & Calidad de Código)
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 text-[10.5px]">
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <span className="text-white font-bold block mb-1">Principio KISS & YAGNI</span>
+                  <p className="text-slate-400">Solución directa y libre de abstracciones innecesarias, adaptada a la velocidad de entrega del equipo.</p>
+                </div>
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <span className="text-white font-bold block mb-1">Códigos HTTP Semánticos</span>
+                  <p className="text-slate-400">200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 404 Not Found, 409 Conflict, 500 Error.</p>
+                </div>
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <span className="text-white font-bold block mb-1">Tipado Estricto End-to-End</span>
+                  <p className="text-slate-400">Zero uso de <code>any</code>. Interfaces canónicas validadas estáticamente en tiempo de compilación.</p>
+                </div>
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800">
+                  <span className="text-white font-bold block mb-1">FinOps: -85% de Tráfico</span>
+                  <p className="text-slate-400">Suscripciones reactivas por eventos evitan el sondeo continuo (polling), reduciendo facturación y energía.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Visor de Endpoints OpenAPI / Swagger */}
+            <div className="bg-slate-950 p-4 rounded-xl border border-indigo-500/30 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-indigo-400" />
+                  <span className="text-xs font-bold text-white">
+                    Catálogo de Endpoints de la API REST (Registrado en docs/swagger.json)
+                  </span>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-800">
+                  11 Endpoints Oficiales
+                </span>
+              </div>
+
+              <div className="space-y-2 text-[11px]">
+                {/* Endpoint 1 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">GET</span>
+                    <code className="text-white font-semibold">/kits</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Listar catálogo de inventario técnico y ciclos</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">200 OK</span>
+                </div>
+
+                {/* Endpoint 2 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-sky-950 text-sky-400 border border-sky-800">POST</span>
+                    <code className="text-white font-semibold">/kits</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Registrar kit con validación obligatoria de todos los campos</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">201 Created / 400 Bad Request</span>
+                </div>
+
+                {/* Endpoint 3 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">GET</span>
+                    <code className="text-white font-semibold">/kits/{`{id}`}</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Consultar ficha técnica y ciclos de vida de un kit</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">200 OK / 404 Not Found</span>
+                </div>
+
+                {/* Endpoint 4 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-amber-950 text-amber-400 border border-amber-800">PUT</span>
+                    <code className="text-white font-semibold">/kits/{`{id}`}</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Actualizar ubicación en bodega o notas técnicas</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">200 OK</span>
+                </div>
+
+                {/* Endpoint 5 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-rose-950 text-rose-400 border border-rose-800">DELETE</span>
+                    <code className="text-white font-semibold">/kits/{`{id}`}</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Dar de baja kit del inventario activo</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">200 OK</span>
+                </div>
+
+                {/* Endpoint 6 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-sky-950 text-sky-400 border border-sky-800">POST</span>
+                    <code className="text-white font-semibold">/dispatches</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Emitir orden de despacho y cambiar estado a 'despachado'</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">201 Created / 409 Conflict</span>
+                </div>
+
+                {/* Endpoint 7 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-sky-950 text-sky-400 border border-sky-800">POST</span>
+                    <code className="text-white font-semibold">/returns</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Triaje en rampa, acumulación atómica +1 ciclo y evaluación de umbral</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">201 Created</span>
+                </div>
+
+                {/* Endpoint 8 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-sky-950 text-sky-400 border border-sky-800">POST</span>
+                    <code className="text-white font-semibold">/maintenance</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Emitir orden de servicio técnico para kits con ciclos cumplidos</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">201 Created</span>
+                </div>
+
+                {/* Endpoint 9 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-amber-950 text-amber-400 border border-amber-800">PUT</span>
+                    <code className="text-white font-semibold">/maintenance/{`{id}`}/complete</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Completar mantenimiento, adjuntar acta y reiniciar ciclos a 0</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">200 OK</span>
+                </div>
+
+                {/* Endpoint 10 */}
+                <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-sky-950 text-sky-400 border border-sky-800">POST</span>
+                    <code className="text-white font-semibold">/auth/login</code>
+                    <span className="text-slate-400 text-[10.5px] hidden sm:inline">— Autenticar credenciales y obtener perfil con rol operativo</span>
+                  </div>
+                  <span className="text-slate-500 text-[10px] font-mono">200 OK / 401 Unauthorized</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Accesos a Archivos Físicos */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px]">
+              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Documento ADR 003 Completo</span>
+                  <code className="text-rose-300 font-semibold">docs/adr-003-estrategia-de-comunicacion.md</code>
+                </div>
+                <button
+                  onClick={() => copyToClipboard('docs/adr-003-estrategia-de-comunicacion.md', 'adr3path')}
+                  className="p-1.5 text-slate-400 hover:text-white rounded cursor-pointer hover:bg-slate-800 transition-colors"
+                  title="Copiar ruta"
+                >
+                  {copiedKey === 'adr3path' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+
+              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 flex items-center justify-between">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Especificación OpenAPI / Swagger</span>
+                  <code className="text-emerald-300 font-semibold">docs/swagger.json</code>
+                </div>
+                <button
+                  onClick={() => copyToClipboard('docs/swagger.json', 'swaggerpath')}
+                  className="p-1.5 text-slate-400 hover:text-white rounded cursor-pointer hover:bg-slate-800 transition-colors"
+                  title="Copiar ruta"
+                >
+                  {copiedKey === 'swaggerpath' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
